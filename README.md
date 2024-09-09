@@ -1,7 +1,6 @@
 # SQL (제로베이스 강의)
-<br><br>
 
-## `[MySQL 기초 및 분법]`
+## `[MySQL 기초 및 문법]`
 
 ### [Database 정의]
 * 여러 사람이 공유하여 사용할 목적으로 체계화해 통합, 관리하는 데이터의 집합체.
@@ -451,11 +450,227 @@
 ## `[SQL File]`
 
 ### [SQL File 정의]
-* 
+* sql 확장자
+* SQL 쿼리를 모아놓은 파일
+* 쿼리를 한번에 실행시킬 수 있음
 * 실습 환경
     * 깃허브-로컬 레포지토리 하나 파기
     * vscode로 해당 폴더 실행
+    * test01.sql 파일 하나 생성
 <br><br>
+
+### [SQL File 실행]
+* mysql 안에서 실행
+    * source </path/filename.sql>
+    * source 대신 `\.` 사용 가능
+    * 경로가 같다면 <filename.sql>만 쓰기 가능
+    * 실행 해보기
+        * mysql -u root -p zerobase (데이터베이스로 바로 접속)
+        * source test01.sql
+        * desc police_station;
+* mysql 밖에서 실행
+    * 괄호 여는 꺾새(<) 사용
+    * mysql -u root -p zerobase < test02.sql
+    * desc crime_status;
+<br><br>
+
+### [데이터베이스 백업]
+* mysqldump 명령어
+* 괄호 닫는 꺾새(>) 사용
+* 백업 완료되면 파일이 하나 생성 된다.
+* 백업한 파일을 실행하면 그 시점으로 복구 가능
+* 백업 해보기
+    * mysqldump -u root -p zerobase > zerobase.sql
+    * 이걸 source로 사용 가능
+* AWS RDS 서비스에서 백업
+    * AWS 관리 콘솔 -> 왼쪽 상단 서비스 선택
+    * 데이터베이스 - RDS 클릭
+    * Amazon RDS의 데이터베이스 클릭
+    * 데이터베이스 중지라면 시작으로 만들기
+    * 연결 및 보안에서 엔드포인트, 포트 확인
+    * mysql -h <엔드포인트> -P <포트> -u <마스터 사용자 이름> -p
+    * 마스터 암호 입력
+    * show databases;
+    * use zerobase;
+    * source zerobase.sql
+    * show tables;
+<br><br>
+
+### [테이블 백업]
+* mysqldump 명령어
+* 백업 해보기
+    * mysqldump -u root -p zerobase celeb > celeb.sql
+    * 이걸 source로 사용 가능
+<br><br>
+
+### [테이블 스키마 백업]
+* 데이터 없이 테이블 생성 쿼리만 백업 가능
+* mysqldump 뒤에 -d 넣어서 사용
+* 백업 해보기
+    * mysqldump -d -u root -p zerobase snl_show > snl.sql
+<br><br>
+
+
+
+## `[파이썬 with MySQL]`
+
+### [mysql 접속]
+* !pip install mysql-connector-python
+* import mysql.connector 확인
+* 접속 많으면 안되니 그때 그때 종료하기
+* 파이썬에서 mysql 접속
+    * mydb = mysql.connector.connect(
+        host = 'localhost',
+        user = 'root',
+        password = 'root'
+    )
+    * mydb.close()
+* 데이터베이스 지정해서 접속
+    * mydb = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'root',
+            database = 'zerobase',
+        )
+    * mydb.close()
+<br><br>
+
+### [쿼리 실행]
+* 테이블 생성
+    * excute 안에 똑같이 쿼리 치기
+    * mydb = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'root',
+            database = 'zerobase',
+        )
+    * cur = mydb.cursor()
+    * cur.execute('create table sql_file (id int, filename varchar(16))')
+    * mydb.close()
+    * 터미널 mysql 접속
+    * desc sql_file;
+* 테이블 삭제
+    * excute 안에 똑같이 쿼리 치기
+    * mydb = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'root',
+            database = 'zerobase',
+        )
+    * cur = mydb.cursor()
+    * cur.execute('drop table sql_file')
+    * mydb.close()
+    * 터미널 mysql 접속
+    * desc sql_file;
+* sql 파일 실행
+    * 실행은 open().read() 함수 사용
+    * mydb = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'root',
+            database = 'zerobase',
+        )
+    * cur = mydb.cursor()
+    * sql = open('test03.sql').read()
+    * cur.execute(sql)
+    * mydb.close()
+    * 터미널 mysql 접속
+    * desc sql_file;
+* sql 파일에 쿼리가 많은 경우 실행법
+    * multi=True로 변경
+    * for문 돌리면서 패치 만들고 커밋
+    * mydb = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'root',
+            database = 'zerobase',
+        )
+    * cur = mydb.cursor()
+    * sql = open('test04.sql').read()
+    * for i in cur.execute(sql, multi=True):
+        if i.with_rows:
+            print(i.fetchall())
+        else:
+            print(i.statement)
+    * mydb.commit()
+    * mydb.close()
+    * 터미널 mysql 접속
+    * desc sql_file;
+<br><br>
+
+### [Fetch All]
+* 데이터를 가져온 경우에는 변수에 데이터를 담을 수 있음.
+* 결과값을 변수에 모두 담을 때 사용
+* fetch all 사용
+    * cur = mydb.cursor(buffered=True)
+    * cur.execute('select * from sql_file')
+    * result = cur.fetchall()
+    * 프린트 해보기
+* 판다스로 읽기
+    * df = pd.DataFrame(result)
+    * df.head()
+<br><br>
+
+### [csv 파일 사용]
+* csv 파일 데이터를 파이썬을 활용해 insert
+* police_station.csv 파일 읽기
+    * df = pd.read_csv('police_station.csv')
+    * df.read()
+* 파이썬 활용해 insert
+    * sql = 'insert into police_station values (%s, %s)'
+    * print('### INSERT ###')
+    * for i, row in df.iterrows():
+        cur.execute(sql, tuple(row))
+        print(tuple(row))
+        mydb.commit()
+* 한글이 깨지는 경우
+    * pd.read_csv() 파라미터에 encoding='euc-kr' 추가
+<br><br>
+
+
+
+## `[MySQL 문법 2]`
+
+### [KEY 문법]
+* PRIMARY KEY
+    * 기본 키
+    * 테이블의 각 레코드를 식별
+    * 중복 없는 고유값 포함
+    * NULL 불가능
+    * 테이블 당 하나의 기본키를 가짐
+    * 컬럼 하나를 PRIMARY KEY로 지정 가능
+    * 여러 컬럼을 하나의 PRIMARY KEY로 지정 가능
+    * 한개의 컬럼을 설정
+        * 마지막 줄에 무엇을 키로 할건지 선언
+        * create table persons (pid int not null, name varchar(16), age int, sex char, primary key (pid));
+        * desc persons;
+        * 키값에 PRI라고 적혀 있는 것이 PRIMARY KEY
+    * 여러개의 컬럼을 설정
+        * 마지막 줄에 키를 2개 선언
+        * create table animal (name varchar(16) not null, type varchar(16) not null, age int, primary key (name, type));
+        * desc animal;
+    * PRIMARY KEY 삭제
+        * drop을 사용
+        * alter table persons drop primary key;
+        * desc persons;
+        * alter table animal drop primary key;
+        * desc animal;
+    * 이미 생성된 테이블에 PRIMARY KEY 설정
+        * add를 사용
+        * alter table persons add primary key (pid);
+        * desc persons;
+        * alter table animal add primary key (name, type);
+        * desc animal;
+* FOREIGN KEY
+    * 
+<br><br>
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 # SQL (제로베이스 강의)
 
-## `[MySQL 기초 및 문법]`
+## `[데이터 베이스]`
 
 ### [Database 정의]
 * 여러 사람이 공유하여 사용할 목적으로 체계화해 통합, 관리하는 데이터의 집합체.
@@ -103,7 +103,7 @@
 
 
 
-## `[DML]`
+## `[MySQL 기초 문법]`
 <br><br>
 
 ### [INSERT 문법]
@@ -629,46 +629,180 @@
 
 
 
-## `[MySQL 문법 2]`
+## `[MySQL 기초 문법 2]`
 
-### [KEY 문법]
-* PRIMARY KEY
-    * 기본 키
-    * 테이블의 각 레코드를 식별
-    * 중복 없는 고유값 포함
-    * NULL 불가능
-    * 테이블 당 하나의 기본키를 가짐
-    * 컬럼 하나를 PRIMARY KEY로 지정 가능
-    * 여러 컬럼을 하나의 PRIMARY KEY로 지정 가능
-    * 한개의 컬럼을 설정
-        * 마지막 줄에 무엇을 키로 할건지 선언
-        * create table persons (pid int not null, name varchar(16), age int, sex char, primary key (pid));
-        * desc persons;
-        * 키값에 PRI라고 적혀 있는 것이 PRIMARY KEY
-    * 여러개의 컬럼을 설정
-        * 마지막 줄에 키를 2개 선언
-        * create table animal (name varchar(16) not null, type varchar(16) not null, age int, primary key (name, type));
-        * desc animal;
-    * PRIMARY KEY 삭제
-        * drop을 사용
-        * alter table persons drop primary key;
-        * desc persons;
-        * alter table animal drop primary key;
-        * desc animal;
-    * 이미 생성된 테이블에 PRIMARY KEY 설정
-        * add를 사용
-        * alter table persons add primary key (pid);
-        * desc persons;
-        * alter table animal add primary key (name, type);
-        * desc animal;
-* FOREIGN KEY
-    * 
+### [PRIMARY KEY 문법]
+* 기본 키
+* 테이블의 각 레코드를 식별
+* 중복 없는 고유값 포함
+* NULL 불가능
+* 테이블 당 하나의 기본키를 가짐
+* 컬럼 하나를 PRIMARY KEY로 지정 가능
+* 여러 컬럼을 하나의 PRIMARY KEY로 지정 가능
+* 한개의 컬럼을 설정
+    * 마지막 줄에 무엇을 키로 할건지 선언
+    * create table persons (pid int not null, name varchar(16), age int, sex char, primary key (pid));
+    * desc persons;
+    * 키값에 PRI라고 적혀 있는 것이 PRIMARY KEY
+* 여러개의 컬럼을 설정
+    * 마지막 줄에 키를 2개 선언
+    * create table animal (name varchar(16) not null, type varchar(16) not null, age int, primary key (name, type));
+    * desc animal;
+* PRIMARY KEY 삭제
+    * alter drop을 사용
+    * alter table persons drop primary key;
+    * desc persons;
+    * alter table animal drop primary key;
+    * desc animal;
+* 이미 생성된 테이블에 PRIMARY KEY 설정
+    * alter add를 사용
+    * alter table persons add primary key (pid);
+    * desc persons;
+    * alter table animal add primary key (name, type);
+    * desc animal;
+* CONSTRAINT 문법으로 설정
+    * alter table animal add constraint PK_animal Key (name, type);
+    * desc animal;
+<br><br>
+
+### [FOREIGN KEY 문법]
+* 외래 키
+* 테이블과 다른 테이블을 연결
+* FOREIGN KEY로 지정된 컬럼은 연결할 테이블의 기본키가 된다.
+* 지금 테이블의 PRIMARY KEY는 따로 있다.
+* 다른 테이블의 PRIMARY KEY를 참조해서 FOREIGN KEY 컬럼을 만드는 것이다.
+* 한 테이블에 2개 있을 수도 있다.
+* CONSTRAINT 문법으로 FOREIGN KEY 설정
+    * create table orders (oid int not null, order_no varchar(16), pid int, primary key (oid), constraint FK_persons foreign key (pid) references persons(pid));
+    * desc orders;
+    * 키에 MUL 표시가 생김
+* CONSTRAINT 생략하고 FOREIGN KEY 설정
+    * create table job (jid int not null, name varchar(16), pid int, primary key (jid), foreign key (pid) references persons(pid));
+* FOREIGN KEY 삭제
+    * alter drop을 사용
+    * alter table orders drop foreign key FK_persons;
+    * 삭제 하더라도 키에 MUL 표시는 그대로 있다.
+    * 레퍼런스 관계만 깨지는 것
+    * show create table orders; 에서 확인 가능
+* 생성된 테이블에 FOREIGN KEY 설정
+    * alter table orders add foreign key (pid) references persons(pid);
+    * desc orders;
+    * show create table orders;
+* 추가 예제
+    * select count(distinct name) from police_station;
+    * select count(distinct police_station) from crime_status;
+    * select distinct name from police_station limit 3;
+    * select distinct police_station from crime_status limit 3;
+    * select c.police_station, p.name from crime_status c, police_station p where p.name like concat('서울', c.police_station, '경찰서') group by c.police_station, p.name;
+    * alter table police_station add primary key (name);
+    * desc police_station;
+    * alter table crime_status add column reference varchar(16);
+    * alter table crime_status add foreign key (reference) references police_station(name);
+    * update crime_status c, police_station p set c.reference=p.name where p.name like concat('서울', c.police_station, '경찰서');
+    * select distinct police_station, reference from crime_status;
+    * 이제 두 테이블은 연결되었다.
+    * crime_status가 police_station을 참조한다.
+    * 두 테이블을 조인할 때에는 FOREIGN KEY 기준으로 하면 된다.
+    * select c.police_station, p.address from crime_status c, police_station p where c.reference=p.name group by c.police_station;
+<br><br>
+
+### [집계함수 개념]
+* 여러 컬럼 혹은 전체 컬럼으로부터 하나의 결과값을 반환하는 함수
+* COUNT: 총 갯수를 계산
+* SUM: 합계를 계산
+* AVG: 평균을 계산
+* MIN: 최소값을 찾아 리턴
+* MAX: 최대값을 찾아 리턴
+* FIRST: 첫번째 값을 리턴
+* LAST: 마지막 값을 리턴
+* 명령어 뒤에 괄호를 붙여서 컬럼을 지정한다.
+<br><br>
+
+### [COUNT 문법]
+* 총 갯수를 계산
+    * select count(*) from police_station;
+* 중복 제거한 결과 계산
+    * DISTINCT 사용
+    * select count(distinct police_station) from crime_status;
+    * select count(distinct crime_type) from crime_status;
+<br><br>
+
+### [SUM 문법]
+* 숫자 컬럼의 합계를 계산
+    * select sum(case_number) from crime_status where status_type='발생';
+    * raw data를 확인하고 싶으면 집계함수만 빼고 검색하면 된다.
+    * select case_number from crime_status where status_type='발생';
+<br><br>
+
+### [AVG 문법]
+* 숫자 컬럼의 평균을 계산
+    * select avg(case_number) from crime_status where crime_type like '폭력' and status_type='검거';
+    * select avg(case_number) from crime_status where police_station like '중부' and status_type='발생';
+<br><br>
+
+### [MIN 문법]
+* 최소값을 찾아 리턴
+    * select min(case_number) from crime_status where crime_type like '강도' and status_type='발생';
+    * select min(case_number) from crime_status where police_station like '중부' and status_type='검거';
+<br><br>
+
+### [MAX 문법]
+* 최대값을 찾아 리턴
+    * select max(case_number) from crime_status where crime_type like '살인' and status_type='검거';
+    * select max(case_number) from crime_status where police_station like '강남' and status_type='발생';
+<br><br>
+
+### [GROUP BY 문법]
+* 그룹화하여 데이터를 조회
+* 집계함수를 활용하여 함께 사용하는 편
+* ORDER BY와 함께 쓸 때는 GROUP BY를 먼저 쓴다.
+* 그룹화 조회
+    * select police_station from crime_status group by police_station order by police_station limit 5;
+* DISTICT를 사용하면 ORDER BY는 사용 불가
+    * select distinct police_station from crime_status limit 5;
+* SUM과 같이 사용
+    * 경찰서 별로 범죄 발생 수 합
+    * select police_station, sum(case_number) 발생건수 from crime_status where status_type like '발생' group by police_station order by 발생건수 desc;
+* AVG와 같이 사용
+    * 경찰서 별로 범죄 검거 수 평균
+    * select police_station, avg(case_number) 평균검거건수 from crime_status where status_type like '검거' group by police_station order by 평균검거건수 desc;
+* 다른 종류 행 2개 출력
+    * (정보: status_type는 2개 뿐)
+    * select police_station, status_type, avg(case_number) from crime_status group by police_station, status_type;
+<br><br>
+
+### [HAVING 문법]
+* 집계함수의 조건문
+* 조건에 집계함수를 쓰면 WHERE 대신 HAVING 사용
+* SUM과 함께 사용
+    * select police_station, sum(case_number) cnt from crime_status where status_type like '발생' group by police_station having cnt > 4000;
+* AVG와 함께 사용
+    * select police_station, avg(case_number) cnt from crime_status where (crime_type like '폭력' or crime_type like '절도') and status_type like '발생' group by police_station having cnt >= 2000;
+<br><br>
+
+### [SCALAR 함수 개념]
+* 입력값을 기준으로 단일 값을 반환
+* UCASE: 영문을 대문자로 변환
+* LCASE: 영문을 소문자로 변환
+* MID: 문자열 일부분을 반환
+* LENGTH: 문자열의 길이를 반환
+* ROUND: 지정한 자리에서 숫자를 반올림
+* NOW: 현재 날짜 및 시간을 반환
+* FORMAT: 숫자를 천단위 콤마가 있는 형식으로 변환
+<br><br>
+
+### [UCASE 문법]
+* 영문을 대문자로 변환
+* 연습
+    * select ucase()
 <br><br>
 
 
 
 
 
+
+## `[MySQL 서브 쿼리]`
 
 
 

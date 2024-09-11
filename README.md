@@ -791,20 +791,127 @@
 * FORMAT: 숫자를 천단위 콤마가 있는 형식으로 변환
 <br><br>
 
-### [UCASE 문법]
-* 영문을 대문자로 변환
-* 연습
-    * select ucase()
+### [UCASE, LCASE 문법]
+* 영문을 대문자로, 소문자로 변환
+* 예제
+    * select ucase(menu), price from sandwich where price > 15;
+    * select lcase(menu), price from sandwich where price < 5;
+<br><br>
+
+### [MID 문법]
+* 문자열 일부분을 반환
+* MID(문자, A번, B개)으로 사용
+* A번 위치부터 B개를 가져온다.
+* 예제
+    * select mid('This is mid test', 1, 4);
+    * select mid('This is mid test', 6, 5);
+    * select mid('This is mid test', -4, 4);
+    * select mid('This is mid test', -8, 3);
+    * select mid(cafe, 6, 4) from sandwich where ranking = 11;
+    * select mid(cafe, -4, 4) from sandwich where ranking = 11;
+<br><br>
+
+### [LENGTH 문법]
+* 문자열의 길이를 반환
+* 예제
+    * select length('This is len test');
+    * select length('');
+    * select length(' ');
+    * select length(null);
+    * select length(address), address from sandwich where ranking<=3;
+<br><br>
+
+### [ROUND 문법]
+* 지정한 자리에서 숫자를 반올림
+* ROUND(숫자, 반올림 위치)로 사용
+* 반올림 위치 비워두면 0에서 반올림
+* 예제
+    * select round(315.625);
+    * select round(315.625, 0);
+    * select round(315.625, 1);
+    * select round(315.625, -1);
+    * select ranking, price, round(price) from sandwich order by ranking desc limit 3;
+<br><br>
+
+### [NOW 문법]
+* 현재 날짜 및 시간을 반환
+* 예제
+    * select now();
+<br><br>
+
+### [FORMAT 문법]
+* 숫자를 천단위 콤마가 있는 형식으로 변환
+* FORMAT(숫자, 표시할 소수점 위치)로 사용
+* ROUND에 천단위 콤마 기능까지 더한 함수
+* ROUND는 숫자를 리턴하지만 FORMAT은 스트링을 리턴하니 주의
+* 예제
+    * select format(12345.6789, 0);
+    * select format(12345.6789, 2);
+    * select format(12345.6789, 10);
+    * select format(price, 0) from sandwich where round(price, 1)>=2;
 <br><br>
 
 
 
+## `[MySQL 서브쿼리]`
 
+### [서브쿼리 개념]
+* 하나의 SQL문 안에 포함되어 있는 또 다른 SQL문
+* 큰 SQL문을 메인쿼리, 포함된 SQL문을 서브쿼리라고 한다.
+* 괄호로 묶어서 사용
+* 단일 행 혹은 복수 행 비교 연산자와 함께 사용 가능
+* 서브쿼리에서는 ORDER BY 사용 불가
+* 메인쿼리가 서브쿼리를 포함하는 종속적인 관계
+    * 서브쿼리는 메인쿼리의 컬럼 사용 가능
+    * 메인쿼리는 서브쿼리의 컬럼 사용 불가
+* 종류
+    * 스칼라 서브쿼리: SELECT 절에 사용
+    * 인라인 뷰: FROM 절에 사용
+    * 중첩(nested) 서브쿼리: WHERE 절에 사용
+<br><br>
 
+### [스칼라 서브쿼리 문법]
+* SELECT 절에 사용
+* 결과는 하나의 컬럼만 반환하게 해야한다.
+* SELECT 절에는 원래 컬럼이 온다.
+* 컬럼 한개 대신 이 스칼라 서브쿼리를 사용하는 것
+* 예제
+    * select case_number, (select avg(case_number) from crime_status where crime_type like '강도' and status_type like '검거') avg from crime_status where police_station like '은평' and crime_type like '강도' and status_type like '검거';
+<br><br>
 
-## `[MySQL 서브 쿼리]`
+### [인라인 뷰 문법]
+* FROM 절에 사용
+* FROM 절에는 원래 테이블이 온다.
+* 인라인 뷰 서브쿼리가 실행된 결과를 테이블로 사용하는 것
+* 예제
+    * select c.police_station, c.crime_type, c.case_number from crime_status c, (select police_station, max(case_number) cnt from crime_status where status_type like '발생' group by police_station) m where c.police_station=m.police_station and c.case_number=m.cnt;
+<br><br>
 
-
+### [중첩 서브쿼리 문법]
+* WHERE 절에 사용
+* 중첩 서브쿼리 종류
+    * single row: 하나의 결과값을 검색
+    * multiple row: 하나 이상의 결과값을 검색
+    * multiple column: 하나 이상의 컬럼을 검색
+* single row 예제
+    * 대부분 비교연산자와 사용할 때 결과값이 하나여야 한다.
+    * 이럴 때 single row 사용
+    * 따로 문법이 있는건 아니고 조건문으로 1개로 제한하기
+    * select name from celeb where name=(select host from snl_show where id=1);
+* multiple row 예제
+    * IN과 사용할 때 결과값은 여러개 가능
+    * 이럴 때 multiple row 사용
+    * select host from snl_show where host in (select name from celeb where job_title like '%영화배우%');
+    * EXISTS와 사용하는 경우
+    * select name from police_station p where exists (select police_station from crime_status c where p.name=c.reference and case_number>2000);
+    * ANY와 사용하는 경우
+    * select name from celeb where name=any (select host from snl_show);
+    * ALL과 사용하는 경우
+    * select name from celeb where name=all (select host from snl_show where id=1);
+* multiple column 예제
+    * WHERE 절에서 컬럼과 컬럼들을 IN과 사용할 때 사용
+    * select name, sex, agency from celeb where (sex, agency) in (select sex, agency from celeb where name='강동원');
+<br><br>
 
 
 

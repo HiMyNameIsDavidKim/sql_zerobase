@@ -18,6 +18,15 @@
     * mysql -u root -p
 <br><br>
 
+### [SQL의 기본 구성]
+* SELECT 컬럼, AGG(컬럼)
+* FROM 테이블
+* WHERE 조건
+* GROUP BY 컬럼
+* (HAVING 조건)
+* ORDER BY 컬럼
+<br><br>
+
 ### [Database 관리]
 * DB 목록 확인
     * show databases;
@@ -282,6 +291,7 @@
 ### [JOIN 문법]
 * 두개 이상의 테이블을 결합하는 것
 * table1 join table2 on 조건 외우기
+* 만약에 컬럼 명이 같으면 on 대신 using 사용 가능 (비추)
 * INNER JOIN: 교집합
 * LEFT JOIN: 왼쪽 + 교집합
 * RIGHT JOIN: 교집합 + 오른쪽
@@ -349,6 +359,9 @@
     * select distinct agency from celeb;
     * select sex, job_title from celeb where job_title like '%가수%';
     * select distinct sex, job_title from celeb where job_title like '%가수%';
+* 보통 COUNT랑 같이 사용
+    * 중복 없는 갯수
+    * select count(distinct agency) from celeb;
 <br><br>
 
 ### [LIMIT 문법]
@@ -774,6 +787,8 @@
 ### [HAVING 문법]
 * 집계함수의 조건문
 * 조건에 집계함수를 쓰면 WHERE 대신 HAVING 사용
+* 집계함수로 만든 값을 WHERE에서 쓰면 인식을 못한다.
+* SELECT 가 더 늦게 실행되기 때문이다.
 * SUM과 함께 사용
     * select police_station, sum(case_number) cnt from crime_status where status_type like '발생' group by police_station having cnt > 4000;
 * AVG와 함께 사용

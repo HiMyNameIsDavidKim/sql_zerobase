@@ -947,6 +947,17 @@
         when (조건2) then (조건2 해당할 때 결과)
         else (모두 해당하지 않을 때 결과)
     end as level
+* window 함수 집계
+    * 집계함수를 window 함수로 사용할 수 있다.
+    * 집계된 결과값을 기존 데이터에 컬럼을 추가해 보여준다.
+    * 결과를 보여줄 때 행 수가 줄어들지 않는 특징이 있다.
+    * group by는 집계 결과만 보여주므로 행 수 가 줄어든다.
+    * over, partition by 와 함께 사용된다.
+    * select sum(col1) over (partition by col2) from table
+* window 함수 컬럼 순서변경
+    * lead: 2행 값이 1행으로 온다. 뒤에 있던 값이 리더로 앞서간다.
+    * lag: 1행 값이 2행으로 간다. 앞에 있던 값이 질질 끌려 뒤로간다.
+    * order by 와 함께 사용된다.
 <br><br>
 
 

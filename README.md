@@ -933,20 +933,32 @@
 ## `[실전 팁]`
 * 테이블 불러올 때는 ESC 밑에 백틱 사용
 * 스트링 사용할 때는 엔터 옆에 따옴표 사용
-* 완성된 쿼리문 서브쿼리로 사용하기
-    * 쿼리문을 with tb as () 로 감싼다.
-    * 다음 쿼리에서 테이블을 불러오듯 from에서 tb를 사용하면 된다.
+* 완성된 쿼리문 서브쿼리로 사용
+    * with 절이 조인도 가능하고 더 좋다.
+    * 하지만 메모리를 많이 사용하므로 주의한다.
+    * with 절
+        * 쿼리문을 with tb as () 로 감싼다.
+        * 다음 쿼리에서 테이블을 불러오듯 from에서 tb를 사용하면 된다.
+    * from 절
+        * from 뒤 테이블 위치에 ()로 감싸 넣어준다.
 * where 조건절은 주석처리 쉽게 True먼저 걸고 and로 묶는다.
     * where True
         and col1 is not null
         and col2 is not null
 * select 에서도 주석처리 쉽게 마지막 값도 ,를 붙여준다.
 * 조건에 따라 값 부여하기
-    * case
-        when (조건1) then (조건1 해당할 때 결과)
-        when (조건2) then (조건2 해당할 때 결과)
-        else (모두 해당하지 않을 때 결과)
-    end as level
+    * 조건 대상 1개 컬럼
+        * case (col1)
+            when (조건1) then (조건1 해당할 때 결과)
+            when (조건2) then (조건2 해당할 때 결과)
+            else (모두 해당하지 않을 때 결과)
+        end as level
+    * 조건 대상 여러개 컬럼
+        * case
+            when (col1 조건1) then (조건1 해당할 때 결과)
+            when (col2 조건2) then (조건2 해당할 때 결과)
+            else (모두 해당하지 않을 때 결과)
+        end as level
 * window 함수 집계
     * 집계함수를 window 함수로 사용할 수 있다.
     * 집계된 결과값을 기존 데이터에 컬럼을 추가해 보여준다.

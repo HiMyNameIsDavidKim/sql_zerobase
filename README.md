@@ -970,6 +970,13 @@
     * lead: 2행 값이 1행으로 온다. 뒤에 있던 값이 리더로 앞서간다.
     * lag: 1행 값이 2행으로 간다. 앞에 있던 값이 질질 끌려 뒤로간다.
     * order by 와 함께 사용된다.
+* division by 0 에러
+    * 분모를 0으로 나눈 경우에 발생한다.
+    * 분모를 0 대신에 NULL 값으로 변경해준다.
+    * col1 / if(col2=0, NULL, col2) as avg
+    * 최종 나누기한 결과값은 NULL이 되므로 에러는 해결된다.
+* 만든 테이블 따로 CREATE하기
+    * CREATE TABLE inventory.sku_grade AS (만든 테이블 복붙)
 <br><br>
 
 
